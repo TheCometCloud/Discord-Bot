@@ -98,7 +98,7 @@ async def build(ctx):
     talents = hotslogs.get_talents(ctx.message.content[7:])
     try:
         await client.send_message(
-                                    ctx.message.channel, "*" + ctx.message.content[7:] + "*" + "\n\n"
+                                    ctx.message.channel, f'*{ctx.message.content[7:]}* \n\n'
                                     "Level 1: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[0]) + "\n\n"
                                     "Level 4: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[1]) + "\n\n"
                                     "Level 7: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[2]) + "\n\n"
@@ -109,7 +109,7 @@ async def build(ctx):
                                     )
     except IndexError:
         await client.send_message(ctx.message.channel,
-                                  "There's no build data for " + ctx.message.content[7:] + ". Try to brew something!")
+                                  f"There's no build data for {ctx.message.content[7:]}. Try to brew something!")
 
 
 @client.command(pass_context=True, help="$flip : Flips a coin.")
@@ -167,7 +167,7 @@ async def next_song():
 @client.command(pass_context=True, help="$wussplayin : Tells you what song is currently playing.")
 @commands.has_permissions(change_nickname=True)
 async def wussplayin(ctx):
-    await client.send_message(ctx.message.channel, client.player.title)
+    await client.send_message(ctx.message.channel, f'Currently playing: {client.player.title}')
 
 
 @client.command(pass_context=True, help="$emptyqueue : Removes all remaining songs from the queue.")
