@@ -6,12 +6,16 @@ import random
 import youtube
 import asyncio
 import secret
+import sys
+
+parameters = sys.argv
 
 Client = discord.Client()
 bot_prefix = "$"
 client = commands.Bot(command_prefix=bot_prefix)
+debug_mode = False
 
-helptext = "**Wuss poppin!**\n" \
+help_text = "**Wuss poppin!**\n" \
            "Here are some of my commands:\n\n" \
            "**$build** [*hero name*] : Fetches the best build for the given hero.\n\n" \
            "**$flip** : Flips a coin.\n\n" \
@@ -33,6 +37,24 @@ client.cycling = False
 client.voice = discord.VoiceClient
 client.player = None
 
+for arg in parameters:
+    if arg.lower is 'debug':
+        debug_mode = True
+        continue
+        
+
+def run_bot(key):
+    if key == "YOUR KEY HERE":
+        print("Enter your key in secret.py")
+        
+    else:
+        client.run(key)
+    
+    
+def debug_out(message):
+    if debug_mode:
+        print(message)
+
 
 def is_command(message):
     if message.content.startswith("$") or message.author == client.user:
@@ -40,41 +62,35 @@ def is_command(message):
 
 
 def play_again():
-    coro = implement_player()
-    fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
-
+    func = implement_player()
+    fut = asyncio.run_coroutine_threadsafe(func, client.loop)
+    
     try:
         fut.result()
-    except Exception as e:
-        print(f'Ending playlist. ({str(e)})')
+    except IndexError as e:
+        print(f"Ending playlist. ({e})")
 
 
 def shuffle():
     random.shuffle(client.queue)
 
 
-def _next():
-    if len(client.queue) > 0:
-        play()
-
-
 @client.event
 async def on_ready():
-
     nicknames = ["Yuno", "Rei", "Karen", "2B"]
     name = random.choice(nicknames)
-
+    
     print("Bot online.")
     print(f'Name: {name}"')
     print(f'ID: {client.user.id}')
     print(f'Version: {discord.__version__}')
-
+    
     with open(f'Avatars/{name}.png', 'rb') as f:
         await client.edit_profile(avatar=f.read())
-
+    
     for server in client.servers:
         await client.change_nickname(server.me, name)
-
+    
     await client.change_presence(game=discord.Game(name="Black Desert Online"))
 
 
@@ -89,7 +105,7 @@ async def clear(ctx):
 @commands.has_permissions(change_nickname=True)
 async def halp(ctx):
     print("Help command.")
-    await client.send_message(ctx.message.channel, helptext, )
+    await client.send_message(ctx.message.channel, help_text, )
 
 
 @client.command(pass_context=True, help="$build [*hero name*] : Fetches the best build for the given hero.")
@@ -97,16 +113,15 @@ async def halp(ctx):
 async def build(ctx):
     talents = hotslogs.get_talents(ctx.message.content[7:])
     try:
-        await client.send_message(
-                                    ctx.message.channel, f'*{ctx.message.content[7:]}* \n\n'
-                                    "Level 1: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[0]) + "\n\n"
-                                    "Level 4: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[1]) + "\n\n"
-                                    "Level 7: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[2]) + "\n\n"
-                                    "Level 10: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[3]) + "\n\n"
-                                    "Level 13: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[4]) + "\n\n"
-                                    "Level 16: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[5]) + "\n\n"
-                                    "Level 20: " + ":ok_hand::joy:"
-                                    )
+        await client.send_message(ctx.message.channel,
+                                  f'*{ctx.message.content[7:]}* \n\n'
+                                  "Level 1: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[0]) + "\n\n"
+                                  "Level 4: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[1]) + "\n\n"
+                                  "Level 7: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[2]) + "\n\n"
+                                  "Level 10: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[3]) + "\n\n"
+                                  "Level 13: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[4]) + "\n\n"
+                                  "Level 16: " + re.sub(r"(\w)([A-Z])", r"\1 \2", talents[5]) + "\n\n"
+                                  "Level 20: " + ":ok_hand::joy:")
     except IndexError:
         await client.send_message(ctx.message.channel,
                                   f"There's no build data for {ctx.message.content[7:]}. Try to brew something!")
@@ -218,28 +233,30 @@ async def haolong(ctx):
 
 
 async def implement_player():
-    try:
+    if client.player is not None:
         if not client.player.is_playing():
             song = client.queue.pop(0)
             try:
                 before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-                client.player = await client.voice.create_ytdl_player(url=youtube.get_vid(song),
-                                                                      ytdl_options="--proxy 128.0.0.1:8087",
-                                                                      before_options=before_args,
-                                                                      after=play_again,)
+                client.player = await client.voice.create_ytdl_player(
+                    url=youtube.get_vid(song),
+                    ytdl_options="--proxy 128.0.0.1:8087",
+                    before_options=before_args,
+                    after=play_again,)
                 client.player.start()
             except (IndexError, RuntimeWarning) as e:
                 if e is RuntimeWarning:
                     await next_song()
-
-    except AttributeError:
+    
+    else:
         song = client.queue.pop(0)
         try:
             before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-            client.player = await client.voice.create_ytdl_player(url=youtube.get_vid(song),
-                                                                  ytdl_options="--proxy 128.0.0.1:8087",
-                                                                  before_options=before_args,
-                                                                  after=play_again,)
+            client.player = await client.voice.create_ytdl_player(
+                url=youtube.get_vid(song),
+                ytdl_options="--proxy 128.0.0.1:8087",
+                before_options=before_args,
+                after=play_again,)
             client.player.start()
         except IndexError:
             client.cycling = False
@@ -250,5 +267,8 @@ async def implement_player():
 async def play():
     await implement_player()
 
+if debug_mode:
+    run_bot(secret.DEBUG_KEY)
 
-client.run(secret.SECRET_KEY)
+else:
+    run_bot(secret.SECRET_KEY)
