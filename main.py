@@ -24,7 +24,7 @@ helptext = "**Wuss poppin!**\n" \
            "**$wussplayin** : Tells you what song is currently playing.\n\n\n" \
            "Permitted Commands:\n\n" \
            "**$emptyquotes** : Empties the quote storage.\n\n" \
-           "**$next** : End the current song.\n\n" \
+           "**$next_song** : End the current song.\n\n" \
            "**$clear** : Empties the server messages.\n\n" \
            "**$emptyqueue** : Removes all remaining songs from the queue."
 
@@ -32,7 +32,6 @@ client.queue = []
 client.cycling = False
 client.voice = discord.VoiceClient
 client.player = None
-
 
 def is_command(message):
     if message.content.startswith("$") or message.author == client.user:
@@ -65,9 +64,9 @@ async def on_ready():
     name = random.choice(nicknames)
 
     print("Bot online.")
-    print("Name: {}".format(name))
-    print("ID: {}".format(client.user.id))
-    print("Version: {}".format(discord.__version__))
+    print(f'Name: {name}"')
+    print(f'ID: {client.user.id}')
+    print(f'Version: {discord.__version__}')
 
     with open(f'Avatars/{name}.png', 'rb') as f:
         await client.edit_profile(avatar=f.read())
@@ -154,12 +153,13 @@ async def queue(ctx):
 @queue.error
 async def queue_error(error, ctx):
     if isinstance(error, discord.ext.commands.CommandOnCooldown):
-        await client.send_message(ctx.message.channel, "Please wait **" + str(error.retry_after) +  "** seconds before queuing more songs.")
+        await client.send_message(ctx.message.channel,
+                                  f'Please wait **{str(error.retry_after)}** seconds before queuing more songs.')
 
 
-@client.command(pass_context=True, help="$next : End the current song.")
+@client.command(pass_context=True, help="$next_song : End the current song.")
 @commands.has_permissions(change_nickname=True)
-async def next():
+async def next_song():
     client.player.stop()
 
 
@@ -222,20 +222,20 @@ async def implement_player():
             song = client.queue.pop(0)
             try:
                 before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-                client.player = await client.voice.create_ytdl_player(url=youtube.getVid(song),
+                client.player = await client.voice.create_ytdl_player(url=youtube.get_vid(song),
                                                                       ytdl_options="--proxy 128.0.0.1:8087",
                                                                       before_options=before_args,
                                                                       after=play_again,)
                 client.player.start()
             except (IndexError, RuntimeWarning) as e:
                 if e is RuntimeWarning:
-                    await next()
+                    await next_song()
 
     except AttributeError:
         song = client.queue.pop(0)
         try:
             before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-            client.player = await client.voice.create_ytdl_player(url=youtube.getVid(song),
+            client.player = await client.voice.create_ytdl_player(url=youtube.get_vid(song),
                                                                   ytdl_options="--proxy 128.0.0.1:8087",
                                                                   before_options=before_args,
                                                                   after=play_again,)

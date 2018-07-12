@@ -13,7 +13,7 @@ def get_talents(name):
     for i in soup.find_all('tr'):
         if i.get('id') == "ctl00_MainContent_RadGridPopularTalentBuilds_ctl00__0":
             for j in i.find_all('td'):
-                if not j.string is None and not num_there(j.string):
+                if j.string is not None and not num_there(j.string):
                     talents.append(j.string)
 
     return talents
