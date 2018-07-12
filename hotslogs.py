@@ -9,7 +9,7 @@ def num_there(s):
 def get_talents(name):
     talents = []
     soup = bs4.BeautifulSoup(urllib.request.urlopen
-                             ("https://www.hotslogs.com/Sitewide/HeroDetails?Hero=" + name), "html.parser")
+                             (f'https://www.hotslogs.com/Sitewide/HeroDetails?Hero={name}'), "html.parser")
     for i in soup.find_all('tr'):
         if i.get('id') == "ctl00_MainContent_RadGridPopularTalentBuilds_ctl00__0":
             for j in i.find_all('td'):
