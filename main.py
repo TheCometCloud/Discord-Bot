@@ -33,6 +33,7 @@ client.cycling = False
 client.voice = discord.VoiceClient
 client.player = None
 
+
 def is_command(message):
     if message.content.startswith("$") or message.author == client.user:
         return True
