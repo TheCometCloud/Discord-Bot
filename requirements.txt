@@ -1,0 +1,6 @@
+discord
+bs4
+urllib
+aiohttp
+websockets
+PyNaCl
