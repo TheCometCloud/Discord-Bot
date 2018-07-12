@@ -81,7 +81,7 @@ async def on_ready():
     name = random.choice(nicknames)
     
     print("Bot online.")
-    print(f'Name: {name}"')
+    print(f'Name: {name}')
     print(f'ID: {client.user.id}')
     print(f'Version: {discord.__version__}')
     
@@ -89,7 +89,10 @@ async def on_ready():
         await client.edit_profile(avatar=f.read())
     
     for server in client.servers:
-        await client.change_nickname(server.me, name)
+        if debug_mode:
+            await client.change_nickname(server.me, f'Debug-Mode {name}')
+        else:
+            await client.change_nickname(server.me, name)
     
     await client.change_presence(game=discord.Game(name="Black Desert Online"))
 
