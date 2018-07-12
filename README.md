@@ -7,3 +7,4 @@ First, you should install the requirements
 
 Additionally, if you want to use the youtube-dl feature, you'll need to install ffmpeg and add it to your environment variables.
 
+In secret.py, set the `SECRET_KEY` variable equal to the bot account's secret key.
