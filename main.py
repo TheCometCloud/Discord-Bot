@@ -8,12 +8,14 @@ import asyncio
 import secret
 import sys
 
+
+debug_mode = False
 parameters = sys.argv
 
 Client = discord.Client()
 bot_prefix = "$"
 client = commands.Bot(command_prefix=bot_prefix)
-debug_mode = False
+
 
 help_text = "**Wuss poppin!**\n" \
            "Here are some of my commands:\n\n" \
@@ -37,11 +39,6 @@ client.cycling = False
 client.voice = discord.VoiceClient
 client.player = None
 
-for arg in parameters:
-    if arg.lower is 'debug':
-        debug_mode = True
-        continue
-        
 
 def run_bot(key):
     if key == "YOUR KEY HERE":
@@ -81,7 +78,7 @@ async def on_ready():
     name = random.choice(nicknames)
     
     print("Bot online.")
-    print(f'Name: {name}"')
+    print(f'Name: {name}')
     print(f'ID: {client.user.id}')
     print(f'Version: {discord.__version__}')
     
@@ -89,7 +86,10 @@ async def on_ready():
         await client.edit_profile(avatar=f.read())
     
     for server in client.servers:
-        await client.change_nickname(server.me, name)
+        if debug_mode:
+            await client.change_nickname(server.me, f'Debug-Mode {name}')
+        else:
+            await client.change_nickname(server.me, name)
     
     await client.change_presence(game=discord.Game(name="Black Desert Online"))
 
@@ -182,7 +182,11 @@ async def next_song():
 @client.command(pass_context=True, help="$wussplayin : Tells you what song is currently playing.")
 @commands.has_permissions(change_nickname=True)
 async def wussplayin(ctx):
-    await client.send_message(ctx.message.channel, f'Currently playing: {client.player.title}')
+    try:
+        await client.send_message(ctx.message.channel, f'Currently playing: {client.player.title}')
+
+    except AttributeError:
+        await client.send_message(ctx.message.channel, f'Currently playing: Absolutely nothing.')
 
 
 @client.command(pass_context=True, help="$emptyqueue : Removes all remaining songs from the queue.")
@@ -214,8 +218,8 @@ async def playall():
     songlist = file.readlines()
     for song in songlist:
         client.queue.append(song[:-1])
-        print(song[:-1])
     shuffle()
+    await implement_player()
 
 
 @client.command(pass_context=True, help="$playlist : Get the queue of songs.")
@@ -232,43 +236,42 @@ async def haolong(ctx):
     pass
 
 
+async def initialize_song(song):
+    debug_out("Initializing song...")
+    try:
+        before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+        client.player = await client.voice.create_ytdl_player(
+            url=youtube.get_vid(song),
+            ytdl_options="--proxy 128.0.0.1:8087",
+            before_options=before_args,
+            after=play_again, )
+        client.player.start()
+        debug_out("Song should be playing.")
+    except RuntimeWarning as e:
+        if e is RuntimeWarning:
+            debug_out("Runtime warning occurred.")
+            debug_out(e)
+            # await next_song()
+
+
 async def implement_player():
+    debug_out("Implementing player...")
     if client.player is not None:
         if not client.player.is_playing():
             song = client.queue.pop(0)
-            try:
-                before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-                client.player = await client.voice.create_ytdl_player(
-                    url=youtube.get_vid(song),
-                    ytdl_options="--proxy 128.0.0.1:8087",
-                    before_options=before_args,
-                    after=play_again,)
-                client.player.start()
-            except (IndexError, RuntimeWarning) as e:
-                if e is RuntimeWarning:
-                    await next_song()
+            await initialize_song(song)
     
     else:
+        debug_out("New player being initialized...")
         song = client.queue.pop(0)
-        try:
-            before_args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
-            client.player = await client.voice.create_ytdl_player(
-                url=youtube.get_vid(song),
-                ytdl_options="--proxy 128.0.0.1:8087",
-                before_options=before_args,
-                after=play_again,)
-            client.player.start()
-        except IndexError:
-            client.cycling = False
+        await initialize_song(song)
 
 
-@client.command(pass_context=True)
-@commands.has_permissions(change_nickname=True)
-async def play():
-    await implement_player()
+if len(parameters) > 1 and parameters[1] == 'debug':
+    debug_mode = True
+    debug_out("Debug-Mode activated.")
 
 if debug_mode:
     run_bot(secret.DEBUG_KEY)
-
 else:
     run_bot(secret.SECRET_KEY)
