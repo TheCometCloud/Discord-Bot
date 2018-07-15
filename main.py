@@ -72,24 +72,38 @@ def shuffle():
     random.shuffle(client.queue)
 
 
-@client.event
-async def on_ready():
-    nicknames = ["Yuno", "Rei", "Karen", "2B"]
-    name = random.choice(nicknames)
-    
-    print("Bot online.")
-    print(f'Name: {name}')
-    print(f'ID: {client.user.id}')
-    print(f'Version: {discord.__version__}')
-    
+async def modify_user_settings(name):
     with open(f'Avatars/{name}.png', 'rb') as f:
         await client.edit_profile(avatar=f.read())
-    
+
     for server in client.servers:
         if debug_mode:
             await client.change_nickname(server.me, f'Debug-Mode {name}')
         else:
             await client.change_nickname(server.me, name)
+
+
+@client.event
+async def on_ready():
+    nicknames = ["Yuno", "Rei", "Karen", "2B"]
+    name = ''
+
+    for arg in parameters:
+        try:
+            await modify_user_settings(arg)
+            name = arg
+
+        except:
+            continue
+
+    if name == '':
+        name = random.choice(nicknames)
+        await modify_user_settings(name)
+
+    print("Bot online.")
+    print(f'Name: {name}')
+    print(f'ID: {client.user.id}')
+    print(f'Version: {discord.__version__}')
     
     await client.change_presence(game=discord.Game(name="Black Desert Online"))
 
@@ -251,7 +265,7 @@ async def initialize_song(song):
         if e is RuntimeWarning:
             debug_out("Runtime warning occurred.")
             debug_out(e)
-            # await next_song()
+            await next_song()
 
 
 async def implement_player():
@@ -267,7 +281,7 @@ async def implement_player():
         await initialize_song(song)
 
 
-if len(parameters) > 1 and parameters[1] == 'debug':
+if 'debug' in parameters:
     debug_mode = True
     debug_out("Debug-Mode activated.")
 
