@@ -2,17 +2,29 @@
 This is a general purpose Discord Bot made for music functionality and miscellaneous fun.
 
 ### Getting Started
+
+##### Requirements
 First, you should install the requirements:
 
 ```
 pip install -r requirements.txt
 ```
 
-Additionally, if you want to use the Youtube feature, you'll need to install ffmpeg and add it to
-your environment variables.
+Additionally, if you want to use the voice feature, you'll need to install ffmpeg and add it to
+your environment variables. Instructions on how to do that can be found here:
 
-In secret.py, set the `SECRET_KEY` variable equal to the bot account's token (don't commit after
-you've edited it).
+http://adaptivesamples.com/how-to-install-ffmpeg-on-windows/
+
+##### Installation
+
+Either clone the project or download the .zip file. In secret.py, set the `SECRET_KEY` variable 
+equal to the bot account's token (don't push secret.py after you've edited it).
+
+You can run the bot with:
+
+```
+python main.py
+```
 
 
 ### Debug Mode
