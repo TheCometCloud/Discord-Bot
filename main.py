@@ -5,7 +5,7 @@ import re
 import random
 import youtube
 import asyncio
-import secret
+import os
 import sys
 
 
@@ -286,6 +286,6 @@ if 'debug' in parameters:
     debug_out("Debug-Mode activated.")
 
 if debug_mode:
-    run_bot(secret.DEBUG_KEY)
+    run_bot(os.environ['DEBUG_TOKEN'])
 else:
-    run_bot(secret.SECRET_KEY)
+    run_bot(os.environ['GRIL_TOKEN'])
