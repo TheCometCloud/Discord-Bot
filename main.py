@@ -286,6 +286,6 @@ if 'debug' in parameters:
     debug_out("Debug-Mode activated.")
 
 if debug_mode:
-    run_bot(os.environ['DEBUG_TOKEN'])
+    run_bot(os.environ.get('DEBUG_TOKEN'))
 else:
-    run_bot(os.environ['GRIL_TOKEN'])
+    run_bot(os.environ.get('GRIL_TOKEN'))
