@@ -17,7 +17,7 @@ http://adaptivesamples.com/how-to-install-ffmpeg-on-windows/
 
 ##### Installation
 
-Either clone the project or download the .zip file. In secret.py, set the `SECRET_KEY` variable 
+Either clone the project or download the .zip file and extract. In secret.py, set the `SECRET_KEY` variable 
 equal to the bot account's token (don't push secret.py after you've edited it).
 
 You can run the bot with:
